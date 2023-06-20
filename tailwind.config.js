@@ -6,11 +6,23 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    colors:{
+      'figmablue': '#0D34FF',
+      'black': '#000000',
+      'white': '#ffffff'
+    }, 
     extend: {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+      dropShadow: {
+        'lg': '0 0px 10px rgba(0, 0, 0, 0.5)',
+      },
+      spacing: {
+        '128': '32rem',
+        '144': '36rem',
       },
     },
   },
