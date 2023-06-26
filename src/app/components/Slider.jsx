@@ -17,7 +17,6 @@ const Slider = ({ min, max, steps }) => {
     const step = trackMax / (steps - 1);
 
     const handleMouseMove = (e) => {
-      console.log("sdfgsdfgdsfg");
       if (mouseDown) {
         let pos = e.clientX - offSet;
         pos = Math.max(0, Math.min(pos, trackMax));
@@ -79,48 +78,120 @@ const Slider = ({ min, max, steps }) => {
     setMouseDown(true);
   }, []);
 
+  const handleResize = useCallback(() => {
+    const trackMax = trackHandle.current.offsetWidth - 64;
+    const step = trackMax / (steps - 1);
+    let pos = currentPosition;
+
+    if (pos > trackMax) {
+      pos = trackMax;
+    } else if (pos < 0) {
+      pos = 0;
+    }
+
+    const snappingPos = Math.round(pos / step) * step;
+    setCurrentPosition(steps > 2 ? snappingPos : pos);
+    const displayValue =
+      steps > 2
+        ? min + (Math.round(snappingPos / step) * (max - min)) / (steps - 1)
+        : min + pos / (trackMax / (max - min));
+    setDisplayValue(Math.round(displayValue));
+  }, [currentPosition]);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [handleResize]);
+
   console.log(handleTouchStart === foo.current ? "matches" : "does not match");
 
   foo.current = handleTouchStart;
 
+  //-----------------------------------------------------------------------------------------------------------------------------------------
+
   // const sliderHandle = useRef(null);
   // const trackHandle = useRef(null);
   // const [currentVal, setCurrentVal] = useState(0);
+  // const [offSet, setOffSet] = useState(0);
+  // const [displayValue, setDisplayValue] = useState(min);
 
-  // const handleTouchStart = useCallback((e) => {
-  //   const start = e.touches[0].screenX;
+  // const handleMouseDown = useCallback(
+  //   (e) => {
+  //     const start = e.screenX;
+  //     const initialOffset = offSet;
+  //     const trackMax = trackHandle.current.offsetWidth - 64;
 
-  //   const handleTouchMove = (e) => {
-  //     e.preventDefault();
-  //     const relativeMovement = e.touches[0].screenX - start;
-  //   };
+  //     const handleMouseMove = (e) => {
+  //       console.log(trackMax);
+  //       const relativeMovement = e.screenX - start;
+  //       let newOffset = initialOffset + relativeMovement;
+  //       newOffset = Math.max(0, Math.min(newOffset, trackMax));
+  //       setCurrentVal(newOffset);
+  //       setOffSet(newOffset);
+  //     };
 
-  //   const handleTouchEnd = (e) => {
-  //     window.removeEventListener("touchmove", handleTouchMove, {
-  //       passive: false,
-  //     });
-  //   };
+  //     const handleMouseEnd = (e) => {
+  //       window.removeEventListener("mousemove", handleMouseMove);
+  //     };
 
-  //   window.addEventListener("touchmove", handleTouchMove, { passive: false });
-  //   window.addEventListener("touchend", handleTouchEnd, { once: true });
+  //     window.addEventListener("mousemove", handleMouseMove);
+  //     window.addEventListener("mouseup", handleMouseEnd);
 
-  //   return () => {
-  //     window.removeEventListener("touchmove", handleTouchMove, {
-  //       passive: false,
-  //     });
-  //     window.removeEventListener("touchend", handleTouchEnd, { once: true });
-  //   };
-  // }, []);
+  //     return () => {
+  //       window.removeEventListener("mousemove", handleMouseMove);
+  //       window.removeEventListener("mouseup", handleMouseEnd);
+  //     };
+  //   },
+  //   [offSet]
+  // );
+
+  // const handleResize = useCallback(
+  // )
+
+  // const handleTouchStart = useCallback(
+  //   (e) => {
+  //     const start = e.touches[0].screenX;
+  //     const initialOffset = offSet;
+  //     const trackMax = trackHandle.current.offsetWidth - 64;
+
+  //     const handleTouchMove = (e) => {
+  //       e.preventDefault();
+  //       const relativeMovement = e.touches[0].screenX - start;
+  //       let newOffset = initialOffset + relativeMovement;
+  //       newOffset = Math.max(0, Math.min(newOffset, trackMax));
+  //       setCurrentVal(newOffset);
+  //       setOffSet(newOffset);
+  //     };
+
+  //     const handleTouchEnd = (e) => {
+  //       window.removeEventListener("touchmove", handleTouchMove, {
+  //         passive: false,
+  //       });
+  //     };
+
+  //     window.addEventListener("touchmove", handleTouchMove, { passive: false });
+  //     window.addEventListener("touchend", handleTouchEnd, { once: true });
+
+  //     return () => {
+  //       window.removeEventListener("touchmove", handleTouchMove, {
+  //         passive: false,
+  //       });
+  //       window.removeEventListener("touchend", handleTouchEnd, { once: true });
+  //     };
+  //   },
+  //   [offSet]
+  // );
 
   return (
-    <div>
-      <div>
-        Slider: min:{min} max:{max} steps:{steps} currentPOS:
-        {Math.round(currentPosition)}
-      </div>
+    <div className="flex flex-col justify-center items-center w-full md:p-8 p-2">
       <br />
       <br />
-      <div ref={trackHandle} className="relative h-1 w-[550px] bg-black">
+      <div
+        ref={trackHandle}
+        className="relative flex-grow h-1 w-full w-2/3 md:w-[480px] bg-black"
+      >
         <div
           ref={sliderHandle}
           onMouseDown={handleMouseDown}
