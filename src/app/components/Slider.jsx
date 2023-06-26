@@ -185,7 +185,7 @@ const Slider = ({ min, max, steps }) => {
   // );
 
   return (
-    <div className="flex flex-col justify-center items-center w-full md:p-8 p-2">
+    <div className="flex flex-col justify-center items-center w-full md:p-8 p-4">
       <br />
       <br />
       <div
