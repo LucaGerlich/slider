@@ -10,22 +10,22 @@ const Slider = ({ min, max, steps }) => {
   const [offSet, setOffSet] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [displayValue, setDisplayValue] = useState(min);
-  const foo = useRef(null);
 
   useEffect(() => {
-    const trackMax = trackHandle.current.offsetWidth - 64;
+    const trackMax = 100;
     const step = trackMax / (steps - 1);
 
     const handleMouseMove = (e) => {
       if (mouseDown) {
-        let pos = e.clientX - offSet;
+        const trackWidth = trackHandle.current.offsetWidth;
+        let pos = ((e.clientX - offSet) / trackWidth) * 100;
         pos = Math.max(0, Math.min(pos, trackMax));
         const snappingPos = Math.round(pos / step) * step;
         setCurrentPosition(steps > 2 ? snappingPos : pos);
         const displayValue =
           steps > 2
             ? min + (Math.round(snappingPos / step) * (max - min)) / (steps - 1)
-            : min + pos / (trackMax / (max - min));
+            : min + (pos / trackMax) * (max - min);
         setDisplayValue(Math.round(displayValue));
       }
     };
@@ -34,14 +34,15 @@ const Slider = ({ min, max, steps }) => {
       e.preventDefault();
       if (mouseDown) {
         const touch = e.touches[0];
-        let pos = touch.clientX - offSet;
+        const trackWidth = trackHandle.current.offsetWidth;
+        let pos = ((touch.clientX - offSet) / trackWidth) * 100;
         pos = Math.max(0, Math.min(pos, trackMax));
         const snappingPos = Math.round(pos / step) * step;
         setCurrentPosition(steps > 2 ? snappingPos : pos);
         const displayValue =
           steps > 2
             ? min + (Math.round(snappingPos / step) * (max - min)) / (steps - 1)
-            : min + pos / (trackMax / (max - min));
+            : min + (pos / trackMax) * (max - min);
         setDisplayValue(Math.round(displayValue));
       }
     };
@@ -63,23 +64,33 @@ const Slider = ({ min, max, steps }) => {
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", endMouseAction);
     };
-  }, [mouseDown]);
+  }, [mouseDown, max, min, offSet, steps]);
 
   const handleMouseDown = (e) => {
-    const initalOffset = e.clientX - sliderHandle?.current?.offsetLeft;
-    setOffSet(initalOffset - currentPosition);
+    const trackHandleRect = trackHandle.current.getBoundingClientRect();
+    const sliderHandleRect = sliderHandle.current.getBoundingClientRect();
+    const initialOffset =
+      e.clientX -
+      (sliderHandleRect.left - trackHandleRect.left) -
+      sliderHandleRect.width / 2;
+    setOffSet(initialOffset);
     setMouseDown(true);
   };
 
   const handleTouchStart = useCallback((e) => {
+    const trackHandleRect = trackHandle.current.getBoundingClientRect();
+    const sliderHandleRect = sliderHandle.current.getBoundingClientRect();
     const touch = e.touches[0];
-    // const initalOffset = touch.clientX - sliderHandle?.current?.offsetLeft;
-    setOffSet((old) => old - currentPosition);
+    const initialOffset =
+      touch.clientX -
+      (sliderHandleRect.left - trackHandleRect.left) -
+      sliderHandleRect.width / 2;
+    setOffSet(initialOffset);
     setMouseDown(true);
   }, []);
 
   const handleResize = useCallback(() => {
-    const trackMax = trackHandle.current.offsetWidth - 64;
+    const trackMax = 100;
     const step = trackMax / (steps - 1);
     let pos = currentPosition;
 
@@ -94,9 +105,9 @@ const Slider = ({ min, max, steps }) => {
     const displayValue =
       steps > 2
         ? min + (Math.round(snappingPos / step) * (max - min)) / (steps - 1)
-        : min + pos / (trackMax / (max - min));
+        : min + (pos / trackMax) * (max - min);
     setDisplayValue(Math.round(displayValue));
-  }, [currentPosition]);
+  }, [currentPosition, max, min, steps]);
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -104,10 +115,6 @@ const Slider = ({ min, max, steps }) => {
       window.removeEventListener("resize", handleResize);
     };
   }, [handleResize]);
-
-  console.log(handleTouchStart === foo.current ? "matches" : "does not match");
-
-  foo.current = handleTouchStart;
 
   //-----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -185,7 +192,7 @@ const Slider = ({ min, max, steps }) => {
   // );
 
   return (
-    <div className="flex flex-col justify-center items-center w-full md:p-8 p-4">
+    <div className="flex flex-col justify-center items-center w-full md:p-8 p-10">
       <br />
       <br />
       <div
@@ -196,14 +203,14 @@ const Slider = ({ min, max, steps }) => {
           ref={sliderHandle}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
-          className={`absolute rounded-full h-16 w-16 -top-[31px] bg-white active:bg-figmablue border-black active:border-figmablue border-4 cursor-grab active:drop-shadow-lg flex content-center justify-center flex-wrap select-none	text-black active:text-white`}
-          style={{ transform: `translatex(${currentPosition}px)` }}
+          className={`absolute rounded-full h-16 w-16 -top-[31px] z-10 bg-white active:bg-figmablue border-black active:border-figmablue border-4 cursor-grab active:drop-shadow-lg flex content-center justify-center flex-wrap select-none	text-black active:text-white`}
+          style={{ left: `calc(${currentPosition}% - 2em)` }}
         >
           {displayValue}
         </div>
         <div
-          className="absolute h-1 bg-figmablue"
-          style={{ width: `${currentPosition}px` }}
+          className="absolute h-1 bg-figmablue "
+          style={{ width: `${currentPosition}%` }}
         ></div>
       </div>
     </div>
